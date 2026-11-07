@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  NEO-BRUTALIST WORDLE VAULT — popup.html
+  ============================================================
+  Raw, framework-free markup for the extension popup.
+
+  SECURITY NOTES
+  --------------
+  * No inline scripts and no inline style attributes, so the page
+    complies with the strict Manifest V3 Content-Security-Policy.
+  * A <meta> CSP is additionally declared as defense-in-depth for
+    the "standalone" scenario (popup.html opened directly in a
+    browser where chrome.* APIs are unavailable). It only allows:
+      - scripts/styles from this extension's own origin
+      - network calls to the dictionary API (definitions)
+  * All dynamic content is injected by popup.js using textContent,
+    never innerHTML — user input and API responses cannot inject
+    markup (XSS-safe by design).
+  ============================================================
+-->
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self' https://api.dictionaryapi.dev;">
+  <title>Wordle Vault</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ============================================================
+       HEADER — brand block + live word counter
+       ============================================================ -->
+  <header class="app-header" role="banner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">W</span>
+      <h1 class="brand-title">WORDLE VAULT</h1>
+    </div>
+    <span class="count-chip" id="countChip">0 WORDS</span>
+  </header>
+
+  <!-- ============================================================
+       DAILY WORD LOGGER — word input + save button
+       (today's date is attached automatically by popup.js)
+       ============================================================ -->
+  <section class="add-section" aria-label="Log today's Wordle word">
+    <form id="addForm" class="add-form" autocomplete="off" novalidate>
+      <label class="visually-hidden" for="wordInput">Word to save</label>
+      <input id="wordInput" class="word-input" type="text" maxlength="15"
+             placeholder="ENTER WORD" autocomplete="off" spellcheck="false"
+             aria-describedby="inputHint">
+      <button type="submit" class="btn btn-save" id="saveBtn">+ SAVE</button>
+    </form>
+    <p class="input-hint" id="inputHint">SAVED UNDER TODAY'S DATE — ADD AS MANY WORDS A DAY AS YOU LIKE</p>
+  </section>
+
+  <!-- ============================================================
+       TOOLBAR — vault search filter + two-step clear-all
+       ============================================================ -->
+  <section class="toolbar" aria-label="Vault tools">
+    <label class="visually-hidden" for="searchInput">Search saved words</label>
+    <input id="searchInput" class="search-input" type="text" placeholder="SEARCH…"
+           autocomplete="off" spellcheck="false">
+    <button type="button" class="btn btn-clear" id="clearBtn">CLEAR ALL</button>
+  </section>
+
+  <!-- ============================================================
+       VAULT LIST — saved word cards are rendered here by popup.js
+       ============================================================ -->
+  <main class="vault" aria-label="Saved words">
+    <ul class="word-list" id="wordList" role="list"></ul>
+
+    <!-- Shown when no words have been saved yet -->
+    <div class="empty-state" id="emptyState" hidden>
+      <div class="empty-tiles" aria-hidden="true">
+        <span class="tile">V</span><span class="tile">A</span><span class="tile">U</span><span class="tile">L</span><span class="tile">T</span>
+      </div>
+      <p class="empty-title">VAULT IS EMPTY</p>
+      <p class="empty-sub">SOLVE TODAY'S WORDLE, TYPE IT ABOVE AND HIT SAVE.</p>
+    </div>
+
+    <!-- Shown when a search filter matches nothing -->
+    <p class="no-results" id="noResults" hidden>NO MATCHES</p>
+  </main>
+
+  <!-- Toast notifications (announced to screen readers via aria-live) -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <noscript>
+    <p class="noscript-note">WORDLE VAULT NEEDS JAVASCRIPT — PLEASE ENABLE IT AND REOPEN THE POPUP.</p>
+  </noscript>
+
+  <script src="popup.js"></script>
+</body>
+</html>

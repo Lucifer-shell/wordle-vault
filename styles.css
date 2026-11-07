@@ -1,0 +1,724 @@
+/* ============================================================
+ *  NEO-BRUTALIST WORDLE VAULT — styles.css
+ * ============================================================
+ *  Design system (per project spec):
+ *    • Thick, crisp black borders (2–4px solid #000)
+ *    • Hard zero-blur offset shadows (e.g. 4px 4px 0 #000)
+ *    • Neon accents on cream:
+ *        – primary   #FFDE59  (bright yellow)
+ *        – secondary #FF5757  (hot pink / coral)
+ *        – highlight #00FFCC  (electric cyan)
+ *    • System monospace stack (Courier New / Consolas / monospace)
+ *
+ *  Accessibility & compatibility notes:
+ *    • All accent-coloured surfaces use BLACK text — verified
+ *      WCAG contrast (black on #FF5757 ≈ 6.7:1, on #00FFCC ≈ 16:1,
+ *      on #FFDE59 ≈ 13:1). White text is only ever used on pure
+ *      black (21:1).
+ *    • Plain, non-nested CSS only — parses correctly in the legacy
+ *      browsers this extension targets.
+ *    • :focus-visible keeps full keyboard operability.
+ *    • prefers-reduced-motion disables every animation/transition.
+ * ============================================================ */
+
+/* ------------------------------------------------------------
+ * 1. DESIGN TOKENS
+ * ---------------------------------------------------------- */
+:root {
+  --cream:  #FAF6EE;   /* page background (off-white/cream)        */
+  --paper:  #FFFFFF;   /* card / input background                  */
+  --ink:    #000000;   /* borders, shadows, body text              */
+  --yellow: #FFDE59;   /* primary accent                           */
+  --coral:  #FF5757;   /* secondary accent (delete, danger, error) */
+  --cyan:   #00FFCC;   /* highlight accent (define, success)       */
+  --gray:   #5A5A5A;   /* secondary text                           */
+  --panel:  #FFFCEE;   /* definition panel background              */
+
+  --border-s: 2px;     /* small borders (tiles, mini buttons)      */
+  --border-m: 3px;     /* medium borders (inputs, cards)           */
+  --border-l: 4px;     /* large borders (header, primary buttons)  */
+
+  --shadow-s: 2px 2px 0 var(--ink);
+  --shadow-m: 3px 3px 0 var(--ink);
+  --shadow-l: 4px 4px 0 var(--ink);   /* the signature shadow      */
+
+  --font-mono: "Courier New", "Consolas", "Lucida Console", "Courier", monospace;
+  --popup-w: 400px;    /* comfortable popup width (Chrome max 800) */
+  --gutter: 12px;      /* horizontal page gutter                   */
+}
+
+/* ------------------------------------------------------------
+ * 2. RESET & BASE
+ * ---------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* The [hidden] attribute always wins over any display rule. */
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  width: var(--popup-w);
+}
+
+body {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--cream);
+  margin: 0 auto;              /* centres the column when the popup
+                                  is opened as a standalone page   */
+  -webkit-font-smoothing: none; /* crisp, raw letterforms          */
+}
+
+/* Screen-reader-only helper (labels for inputs). */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Global keyboard focus ring — thick, dashed, unmissable. */
+:focus-visible {
+  outline: 3px dashed var(--ink);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--cyan);
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------
+ * 3. HEADER — yellow brand block + live word counter
+ * ---------------------------------------------------------- */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: var(--gutter) var(--gutter) 0;
+  padding: 12px 14px;
+  background: var(--yellow);
+  border: var(--border-l) solid var(--ink);
+  box-shadow: var(--shadow-l);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;                /* lets the title truncate on tiny widths */
+}
+
+/* Black tile with a yellow "W" — echoes the word tiles below. */
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  background: var(--ink);
+  color: var(--yellow);
+  font-size: 20px;
+  font-weight: 700;
+  border: var(--border-m) solid var(--ink);
+  box-shadow: var(--shadow-s);
+}
+
+.brand-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Black chip with cyan digits — the vault counter. */
+.count-chip {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  background: var(--ink);
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border: var(--border-m) solid var(--ink);
+  box-shadow: var(--shadow-s);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------
+ * 4. BUTTONS — shared Neo-Brutalist button behaviour.
+ *    Every button "presses into the page": the hard shadow
+ *    collapses while the button translates by the same offset.
+ * ---------------------------------------------------------- */
+.btn {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--paper);
+  border: var(--border-m) solid var(--ink);
+  box-shadow: var(--shadow-m);
+  padding: 9px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+
+  -webkit-user-select: none;
+  user-select: none;
+
+  transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.06s ease;
+}
+
+.btn:hover {
+  background: var(--cyan);
+}
+
+.btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+/* Primary CTA — black slab with white type (21:1 contrast). */
+.btn-save {
+  background: var(--ink);
+  color: #FFFFFF;
+}
+
+.btn-save:hover {
+  background: var(--ink);
+  color: var(--yellow);
+}
+
+/* Danger zone — clear-all. Turns coral when armed. */
+.btn-clear {
+  font-size: 11px;
+  padding: 8px 12px;
+}
+
+.btn-clear:hover {
+  background: var(--yellow);
+}
+
+/* Armed state: blinking coral/ink swap demands a conscious
+ * second click, replacing a modal window.confirm(). */
+.btn-clear.is-armed {
+  background: var(--coral);
+  color: var(--ink);
+  animation: arm-blink 0.6s steps(1) infinite;
+}
+
+@keyframes arm-blink {
+  0%, 49%   { background: var(--coral); color: var(--ink); }
+  50%, 100% { background: var(--ink);   color: var(--coral); }
+}
+
+/* ------------------------------------------------------------
+ * 5. DAILY WORD LOGGER — input row + hint
+ * ---------------------------------------------------------- */
+.add-section {
+  margin: 16px var(--gutter) 0;
+}
+
+.add-form {
+  display: flex;
+  gap: 10px;
+}
+
+.word-input {
+  flex: 1 1 auto;
+  min-width: 0;                    /* flex-item overflow guard */
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;       /* Wordle-style display; the
+                                      stored value stays lowercase */
+  color: var(--ink);
+  background: var(--paper);
+  border: var(--border-m) solid var(--ink);
+  box-shadow: var(--shadow-m);
+  padding: 10px 12px;
+}
+
+.word-input::placeholder {
+  color: #ADA694;   /* deliberately muted, but dark enough to read */
+  letter-spacing: 3px;
+}
+
+.input-hint {
+  margin-top: 7px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--gray);
+}
+
+/* ------------------------------------------------------------
+ * 6. TOOLBAR — search + clear-all
+ * ---------------------------------------------------------- */
+.toolbar {
+  display: flex;
+  gap: 10px;
+  margin: 12px var(--gutter) 0;
+}
+
+.search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--ink);
+  background: var(--paper);
+  border: var(--border-m) solid var(--ink);
+  box-shadow: var(--shadow-s);
+  padding: 8px 10px;
+}
+
+.search-input::placeholder {
+  color: #ADA694;
+}
+
+/* ------------------------------------------------------------
+ * 7. VAULT LIST — scrollable card stack
+ * ---------------------------------------------------------- */
+.vault {
+  margin: 14px var(--gutter) 0;
+}
+
+.word-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 330px;      /* keeps the whole popup under Chrome's
+                             600px popup height limit             */
+  overflow-y: auto;
+  /* right/bottom padding gives the hard card shadows room to
+     render inside the scroll container without being clipped  */
+  padding: 2px 6px 8px 2px;
+}
+
+/* Chunky square scrollbars (Chromium) — shared by the vault list
+   and the definition panels. */
+.word-list::-webkit-scrollbar,
+.def-panel::-webkit-scrollbar {
+  width: 14px;
+}
+
+.word-list::-webkit-scrollbar-track,
+.def-panel::-webkit-scrollbar-track {
+  background: var(--cream);
+  border-left: var(--border-s) solid var(--ink);
+}
+
+.word-list::-webkit-scrollbar-thumb,
+.def-panel::-webkit-scrollbar-thumb {
+  background: var(--yellow);
+  border: var(--border-s) solid var(--ink);
+}
+
+.word-list::-webkit-scrollbar-thumb:hover,
+.def-panel::-webkit-scrollbar-thumb:hover {
+  background: var(--coral);
+}
+
+/* Firefox-only: standard scrollbar properties (setting these in
+   Chromium would disable the ::-webkit-scrollbar styling above). */
+@supports (-moz-appearance: none) {
+  .word-list,
+  .def-panel {
+    scrollbar-color: var(--yellow) var(--cream);
+    scrollbar-width: thin;
+  }
+}
+
+/* ------------------------------------------------------------
+ * 8. WORD CARDS
+ * ---------------------------------------------------------- */
+.word-card {
+  background: var(--paper);
+  border: var(--border-m) solid var(--ink);
+  box-shadow: var(--shadow-l);
+  padding: 12px;
+}
+
+.card-main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* The word itself, rendered as Wordle-style letter tiles. */
+.word-tiles {
+  display: flex;
+  flex-wrap: wrap;       /* long words (up to 15) wrap gracefully */
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 30px;
+  background: var(--cream);
+  border: var(--border-s) solid var(--ink);
+  box-shadow: var(--shadow-s);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;        /* date + delete never squeeze */
+}
+
+/* Date label; today's entry gets the electric-cyan treatment.
+   Fixed height + inline-flex keeps it baseline-aligned with the
+   adjacent 26px delete button. */
+.date-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  background: var(--paper);
+  border: var(--border-s) solid var(--ink);
+}
+
+.date-chip--today {
+  background: var(--cyan);
+}
+
+/* Square ✕ delete button — coral on hover as a danger cue. */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--paper);
+  border: var(--border-s) solid var(--ink);
+  box-shadow: var(--shadow-s);
+  cursor: pointer;
+
+  transition: transform 0.06s ease, box-shadow 0.06s ease, background 0.06s ease;
+}
+
+.btn-icon:hover {
+  background: var(--coral);
+}
+
+.btn-icon:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+/* ------------------------------------------------------------
+ * 9. CARD ACTION ROW — DEFINE / WIKI / TRANSLATE
+ * ---------------------------------------------------------- */
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;           /* anchors look like buttons */
+  color: var(--ink);
+  background: var(--paper);
+  border: var(--border-s) solid var(--ink);
+  box-shadow: var(--shadow-s);
+  padding: 6px 10px;
+  cursor: pointer;
+
+  transition: transform 0.06s ease, box-shadow 0.06s ease;
+}
+
+.btn-action:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.btn-action--define    { background: var(--cyan); }
+.btn-action--wiki      { background: var(--yellow); }
+.btn-action--translate { background: var(--coral); }
+.btn-action--retry     { background: var(--yellow); }
+
+/* DEFINE button while the panel is open: inverted (ink slab with
+   cyan text) so the active toggle state is unmistakable. */
+.btn-action--define[aria-expanded="true"] {
+  background: var(--ink);
+  color: var(--cyan);
+}
+
+/* ------------------------------------------------------------
+ * 10. DEFINITION PANEL (inline accordion under a card)
+ * ---------------------------------------------------------- */
+.def-panel {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--panel);
+  border: var(--border-s) solid var(--ink);
+  border-left: 6px solid var(--ink);   /* thick spine — very brutalist */
+  animation: panel-in 0.12s ease-out;
+  /* Cap the panel's height so its card always stays close to the
+     list viewport size — long definitions scroll INSIDE the panel
+     instead of blowing the card out of the list. */
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Loading state: a square spinner that rotates in 4 hard steps. */
+.def-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.def-spinner {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  border: var(--border-s) solid var(--ink);
+  border-right-color: transparent;    /* the "missing tooth"     */
+  animation: spin 0.7s steps(4) infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.def-phonetic {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.def-meaning {
+  margin-top: 10px;
+}
+
+/* Part-of-speech tag — small yellow slab. */
+.pos-chip {
+  display: inline-block;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: var(--yellow);
+  border: var(--border-s) solid var(--ink);
+  margin-bottom: 6px;
+}
+
+.def-list {
+  list-style: none;
+}
+
+.def-item {
+  position: relative;
+  padding: 2px 0 2px 14px;
+  font-size: 12.5px;
+}
+
+/* Square bullet marker. */
+.def-item::before {
+  content: "\25A0";                  /* ■ */
+  position: absolute;
+  left: 0;
+  top: 4px;
+  font-size: 8px;
+}
+
+.def-text {
+  display: block;
+}
+
+.def-example {
+  display: block;
+  margin-top: 2px;
+  font-style: italic;
+  font-size: 11.5px;
+  color: var(--gray);
+}
+
+.def-error {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.def-source {
+  margin-top: 10px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--gray);
+}
+
+/* ------------------------------------------------------------
+ * 11. EMPTY & NO-RESULT STATES
+ * ---------------------------------------------------------- */
+.empty-state {
+  padding: 26px 16px;
+  text-align: center;
+  background: var(--paper);
+  border: var(--border-m) dashed var(--ink);
+}
+
+.empty-tiles {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+/* Faded ghost tiles spelling V-A-U-L-T. */
+.empty-tiles .tile {
+  color: #CFC7B8;
+  box-shadow: none;
+}
+
+.empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.empty-sub {
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--gray);
+}
+
+.no-results {
+  padding: 16px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  background: var(--paper);
+  border: var(--border-m) dashed var(--ink);
+}
+
+/* ------------------------------------------------------------
+ * 12. NOSCRIPT
+ * ---------------------------------------------------------- */
+.noscript-note {
+  margin: 14px var(--gutter);
+  padding: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--coral);
+  border: var(--border-m) solid var(--ink);
+  box-shadow: var(--shadow-m);
+}
+
+/* ------------------------------------------------------------
+ * 13. TOASTS — fixed status bubble at the bottom of the popup
+ * ---------------------------------------------------------- */
+/* In the real popup the viewport IS the 400px column, so
+   left:50% + translateX(-50%) centres the toast perfectly. */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 10;
+  max-width: calc(100% - 24px);
+  padding: 9px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-align: center;
+  background: var(--ink);
+  color: #FFFFFF;
+  border: var(--border-m) solid var(--ink);
+  box-shadow: var(--shadow-s);
+  animation: toast-in 0.12s ease-out;
+}
+
+@keyframes toast-in {
+  /* Opacity-only: a transform here would fight the two different
+     centering strategies (popup vs standalone) defined above. */
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Wide viewport (popup.html opened as a standalone page):
+   anchor the toast to the centred 400px popup column instead of
+   the whole window, so it stays visually attached to the UI. */
+@media (min-width: 481px) {
+  .toast {
+    left: calc(50vw - 200px);
+    right: calc(50vw - 200px);
+    transform: none;
+    margin: 0 auto;
+    width: max-content;   /* ignored by ancient engines → harmless */
+  }
+}
+
+.toast--ok    { background: var(--cyan);   color: var(--ink); }
+.toast--error { background: var(--coral);  color: var(--ink); }
+.toast--info  { background: var(--yellow); color: var(--ink); }
+
+/* ------------------------------------------------------------
+ * 14. REDUCED MOTION — kill every animation/transition for users
+ *     who opt out of motion (vestibular accessibility).
+ * ---------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
